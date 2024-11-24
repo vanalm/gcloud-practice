@@ -1,0 +1,8 @@
+functions-framework
+python-dotenv
+flask
+twilio
+openai
+google-cloud-secret-manager
+google-cloud-storage
+
