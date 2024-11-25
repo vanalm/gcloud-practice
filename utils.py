@@ -121,11 +121,15 @@ def send_message_via_twilio(phone_number, message_body, session_id):
     return unique_id
 
 def access_secret(secret_name):
-    client = secretmanager.SecretManagerServiceClient()
-    project_id = os.environ.get('GCP_PROJECT')
-    name = f"projects/{project_id}/secrets/{secret_name}/versions/latest"
-    response = client.access_secret_version(name=name)
-    return response.payload.data.decode('UTF-8')
+    try:
+        client = secretmanager.SecretManagerServiceClient()
+        project_id = os.environ.get('GCP_PROJECT')
+        name = f"projects/{project_id}/secrets/{secret_name}/versions/latest"
+        response = client.access_secret_version(name=name)
+        return response.payload.data.decode('UTF-8')
+    except Exception as e:
+        print(f"Error accessing secret: {e}")
+        return None
 
 def write_log_to_storage(log_data):
     try:
