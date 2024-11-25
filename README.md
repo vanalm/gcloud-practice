@@ -1,8 +1,7 @@
-# Auto Responder
+# Practicing with GCloud: An SMS based chatbot
 
-A Python-based auto-responder that integrates with Twilio, OpenAI's GPT model, and Google Cloud Platform 
-(GCP) services. The application listens for incoming SMS messages, generates a response using OpenAI's API, 
-sends the response back via Twilio, and logs the interaction to Google Cloud Storage.
+Setting up a system for local development and testing, and a CICD pipeline through Github actions. The app is A Python-based sms chatbot that integrates with Twilio, OpenAI's GPT model, and Google Cloud Platform (GCP) services. The application listens for incoming SMS messages, generates a response using OpenAI's API, 
+sends the response back via Twilio, and logs the interaction to Google Cloud Storage. 
 
 ## Table of Contents
 
