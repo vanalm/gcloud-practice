@@ -91,7 +91,7 @@ storage_client = storage.Client()
 
 
 
-
+print("random line in utils")
 def get_LLM_response(content):
 
     # print(f'Making OpenAI API request... with payload:\n{content}')
