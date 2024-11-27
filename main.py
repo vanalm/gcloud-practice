@@ -13,7 +13,7 @@ import time
 from twilio.request_validator import RequestValidator
 import base64
 import urllib.parse
-from utils import TWILIO_TOKEN, TWILIO_PHONE
+from utils import TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER
 
 
 # Load environment variables
@@ -52,7 +52,7 @@ def auto_responder(request):
             params = request.form.to_dict()  # For form data (application/x-www-form-urlencoded)
         print(f'params: {params}\n\n')
         # Twilio signature validation
-        auth_token = TWILIO_TOKEN  # Use the auth token retrieved earlier
+        auth_token = TWILIO_AUTH_TOKEN  # Use the auth token retrieved earlier
         validator = RequestValidator(auth_token)
   
         if not validator.validate(url, params, twilio_signature):
@@ -83,7 +83,7 @@ def auto_responder(request):
 
     log_data = {
         'timestamp': datetime.now(timezone.utc).isoformat(),
-        'from_number': TWILIO_PHONE,
+        'from_number': TWILIO_PHONE_NUMBER,
         'to_number': phone_number,
         'incoming_message': message_body,
         'terse_response': llm_response,

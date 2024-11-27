@@ -4,13 +4,12 @@ import pytest
 from unittest.mock import patch, MagicMock
 from flask import Flask, request
 from main import auto_responder
-from utils import TWILIO_TOKEN
+from utils import TWILIO_AUTH_TOKEN
 import os
 
 # Sample data for tests
 VALID_TWILIO_SIGNATURE = 'valid_signature'
 INVALID_TWILIO_SIGNATURE = 'invalid_signature'
-TWILIO_AUTH_TOKEN = TWILIO_TOKEN
 TEST_URL = 'http://testserver/'
 
 @pytest.fixture(autouse=True)
