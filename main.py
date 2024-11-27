@@ -22,7 +22,7 @@ load_dotenv()
 # Determine environment
 ENVIRONMENT = os.getenv('ENVIRONMENT', 'dev')  # Defaults to 'development'
 
-
+print('this was a deveopment step if anyone can see it...')
 def auto_responder(request):
     print(f'\n\n\nRequest: \n{request}')
 
