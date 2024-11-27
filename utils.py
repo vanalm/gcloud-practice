@@ -36,6 +36,7 @@ try:
         TO_PHONE_NUMBER = os.getenv("TO_PHONE_NUMBER")
         OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
         TWILIO_MESSAGING_SERVICE_SID = os.getenv("TWILIO_MESSAGING_SERVICE_SID")
+        GCLOUD_DEV_KEY = os.getenv("GCLOUD_DEV_KEY")
 
     elif os.getenv('FUNCTION_NAME'):  # Detect Google Cloud
         print("Running in Google Cloud...")
@@ -49,6 +50,8 @@ try:
         TO_PHONE_NUMBER = get_secret("TO_PHONE_NUMBER")
         OPENAI_API_KEY = get_secret("OPENAI_API_KEY")
         TWILIO_MESSAGING_SERVICE_SID = get_secret("TWILIO_MESSAGING_SERVICE_SID")
+        GCLOUD_DEV_KEY = os.getenv("GCLOUD_DEV_KEY")
+
 
     else:  # Local development
         print("Running locally...")
