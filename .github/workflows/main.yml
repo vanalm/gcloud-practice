@@ -26,6 +26,14 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run tests
+        env:
+          ENVIRONMENT: dev  # Always use dev environment for tests
+          TWILIO_ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}
+          TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
+          TWILIO_PHONE_NUMBER: ${{ secrets.TWILIO_PHONE_NUMBER }}
+          TO_PHONE_NUMBER: ${{ secrets.TO_PHONE_NUMBER }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          TWILIO_MESSAGING_SERVICE_SID: ${{ secrets.TWILIO_MESSAGING_SERVICE_SID }}
         run: pytest tests/
 
   deploy-dev:
@@ -53,6 +61,7 @@ jobs:
           region: us-central1
           service_account_email: practice-dev-account@practice-dev-project.iam.gserviceaccount.com
           environment_variables: |
+            ENVIRONMENT=dev
             GCLOUD_PROJECT=practice-dev-project
             BUCKET_NAME=practice-dev-bucket
 
@@ -81,5 +90,6 @@ jobs:
           region: us-central1
           service_account_email: practice-prod-account@practice-prod-project.iam.gserviceaccount.com
           environment_variables: |
+            ENVIRONMENT=prod
             GCLOUD_PROJECT=practice-prod-project
             BUCKET_NAME=practice-prod-bucket
