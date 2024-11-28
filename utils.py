@@ -10,7 +10,7 @@ from datetime import datetime, timezone
 import uuid
 
 
-print("")
+print("this is the new version of utils.py")
 def get_secret(secret_name):
     """Retrieve secret from Google Cloud Secret Manager."""
     try:
