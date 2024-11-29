@@ -57,8 +57,8 @@ def test_get_LLM_response_exception(mock_openai_create):
     mock_openai_create.assert_called_once()
 
 
-@patch('utils.TWILIO_MESSAGING_SID', 'test_messaging_service_sid')
-@patch('utils.TWILIO_PHONE', 'test_twilio_phone_number')
+@patch('utils.TWILIO_MESSAGING_SERVICE_SID', 'test_messaging_service_sid')
+@patch('utils.TWILIO_PHONE_NUMBER', 'test_twilio_phone_number')
 @patch('utils.Client')
 def test_send_message_via_twilio_success(mock_twilio_client):
     """
