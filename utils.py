@@ -72,13 +72,13 @@ try:
         OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
         TWILIO_MESSAGING_SERVICE_SID = os.getenv("TWILIO_MESSAGING_SERVICE_SID")
 
-    # Verify secrets are loaded
-    required_secrets = [
-        TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER,
-        TO_PHONE_NUMBER, OPENAI_API_KEY, TWILIO_MESSAGING_SERVICE_SID
-    ]
-    if not all(required_secrets):
-        raise ValueError("One or more required secrets are missing.")
+    # # Verify secrets are loaded
+    # required_secrets = [
+    #     TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER,
+    #     TO_PHONE_NUMBER, OPENAI_API_KEY, TWILIO_MESSAGING_SERVICE_SID
+    # ]
+    # if not all(required_secrets):
+    #     raise ValueError("One or more required secrets are missing.")
 
     # Bucket names per environment
     BUCKET_NAMES = {
