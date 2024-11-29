@@ -32,9 +32,9 @@ try:
         environment = 'dev'  # Default to development for CI
         print(f'environment: {environment}')
         TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
-        print(f'got TWILIO_ACCOUNT_SID:')
+        print(f'got TWILIO_ACCOUNT_SID: {TWILIO_ACCOUNT_SID}')
         TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
-        print(f'got AUTH:')
+        print(f'got AUTH: {TWILIO_AUTH_TOKEN}')   ')
         TWILIO_PHONE_NUMBER = os.getenv("TWILIO_PHONE_NUMBER")
         print(f'got t-phone:')
         TO_PHONE_NUMBER = os.getenv("TO_PHONE_NUMBER")
