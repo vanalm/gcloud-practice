@@ -30,13 +30,21 @@ try:
     if os.getenv('CI'):  # Detect GitHub Actions
         print("Running in GitHub Actions...")
         environment = 'dev'  # Default to development for CI
+        print(f'environment: {environment}')
         TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
+        print(f'got TWILIO_ACCOUNT_SID:')
         TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
+        print(f'got AUTH:')
         TWILIO_PHONE_NUMBER = os.getenv("TWILIO_PHONE_NUMBER")
+        print(f'got t-phone:')
         TO_PHONE_NUMBER = os.getenv("TO_PHONE_NUMBER")
+        print(f'got To phone:')
         OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+        print(f'got TWILIO_ACCOUNT_SID:')
         TWILIO_MESSAGING_SERVICE_SID = os.getenv("TWILIO_MESSAGING_SERVICE_SID")
+        print(f'got TWILIO_ACCOUNT_SID:')
         GCLOUD_DEV_KEY = os.getenv("GCLOUD_DEV_KEY")
+        print(f'got TWILIO_ACCOUNT_SID:')
 
     elif os.getenv('FUNCTION_NAME'):  # Detect Google Cloud
         print("Running in Google Cloud...")
