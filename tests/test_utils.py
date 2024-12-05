@@ -5,6 +5,7 @@ import os
 import pytest
 from unittest.mock import patch, MagicMock
 from utils import (
+    initialize_environment,
     get_LLM_response,
     send_message_via_twilio,
     write_log_to_storage,
@@ -16,7 +17,10 @@ import uuid
 def set_env():
     os.environ['ENVIRONMENT'] = 'test'
 
-
+@pytest.fixture(scope="module", autouse=True)
+def setup_environment():
+    initialize_environment()
+    
 @patch('utils.openai_client.chat.completions.create')
 def test_get_LLM_response_success(mock_openai_create):
     """

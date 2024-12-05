@@ -24,86 +24,92 @@ def get_secret(secret_name):
     except Exception as e:
         raise RuntimeError(f"Failed to retrieve secret '{secret_name}': {e}")
 
+def initialize_environment():
+    """Initialize environment variables and clients."""
+    try:
+        # Load credentials based on the running environment
+        if os.getenv('CI'):  # Detect GitHub Actions
+            print("Running in GitHub Actions...")
+            environment = 'dev'  # Default to development for CI
+            print(f'environment: {environment}')
+            TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
+            print(f'got TWILIO_ACCOUNT_SID: {TWILIO_ACCOUNT_SID}')
+            TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
+            print(f'got AUTH: {TWILIO_AUTH_TOKEN}')  
+            TWILIO_PHONE_NUMBER = os.getenv("TWILIO_PHONE_NUMBER")
+            print(f'got t-phone:')
+            TO_PHONE_NUMBER = os.getenv("TO_PHONE_NUMBER")
+            print(f'got To phone:')
+            OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+            print(f'got TWILIO_ACCOUNT_SID:')
+            TWILIO_MESSAGING_SERVICE_SID = os.getenv("TWILIO_MESSAGING_SERVICE_SID")
+            print(f'got TWILIO_ACCOUNT_SID:')
+            GCLOUD_DEV_KEY = os.getenv("GCLOUD_DEV_KEY")
+            print(f'got TWILIO_ACCOUNT_SID:')
 
-try:
-    # Load credentials based on the running environment
-    if os.getenv('CI'):  # Detect GitHub Actions
-        print("Running in GitHub Actions...")
-        environment = 'dev'  # Default to development for CI
-        print(f'environment: {environment}')
-        TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
-        print(f'got TWILIO_ACCOUNT_SID: {TWILIO_ACCOUNT_SID}')
-        TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
-        print(f'got AUTH: {TWILIO_AUTH_TOKEN}')  
-        TWILIO_PHONE_NUMBER = os.getenv("TWILIO_PHONE_NUMBER")
-        print(f'got t-phone:')
-        TO_PHONE_NUMBER = os.getenv("TO_PHONE_NUMBER")
-        print(f'got To phone:')
-        OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-        print(f'got TWILIO_ACCOUNT_SID:')
-        TWILIO_MESSAGING_SERVICE_SID = os.getenv("TWILIO_MESSAGING_SERVICE_SID")
-        print(f'got TWILIO_ACCOUNT_SID:')
-        GCLOUD_DEV_KEY = os.getenv("GCLOUD_DEV_KEY")
-        print(f'got TWILIO_ACCOUNT_SID:')
-
-    elif os.getenv('FUNCTION_NAME'):  # Detect Google Cloud
-        print("Running in Google Cloud...")
-        project_id = os.getenv('GCLOUD_PROJECT')
-        if not project_id:
-            raise ValueError("GCLOUD_PROJECT environment variable is not set in GCP.")
-        environment = 'prod' if project_id.endswith('-prod') else 'dev'
-        TWILIO_ACCOUNT_SID = get_secret("TWILIO_ACCOUNT_SID")
-        TWILIO_AUTH_TOKEN = get_secret("TWILIO_AUTH_TOKEN")
-        TWILIO_PHONE_NUMBER = get_secret("TWILIO_PHONE_NUMBER")
-        TO_PHONE_NUMBER = get_secret("TO_PHONE_NUMBER")
-        OPENAI_API_KEY = get_secret("OPENAI_API_KEY")
-        TWILIO_MESSAGING_SERVICE_SID = get_secret("TWILIO_MESSAGING_SERVICE_SID")
-        GCLOUD_DEV_KEY = os.getenv("GCLOUD_DEV_KEY")
-
-
-    else:  # Local development
-        print("Running locally...")
-        environment = 'dev'  # Default to development for local testing
-        load_dotenv()
-        TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
-        TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
-        TWILIO_PHONE_NUMBER = os.getenv("TWILIO_PHONE_NUMBER")
-        TO_PHONE_NUMBER = os.getenv("TO_PHONE_NUMBER")
-        OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-        TWILIO_MESSAGING_SERVICE_SID = os.getenv("TWILIO_MESSAGING_SERVICE_SID")
-
-    # # Verify secrets are loaded
-    # required_secrets = [
-    #     TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER,
-    #     TO_PHONE_NUMBER, OPENAI_API_KEY, TWILIO_MESSAGING_SERVICE_SID
-    # ]
-    # if not all(required_secrets):
-    #     raise ValueError("One or more required secrets are missing.")
-
-    # Bucket names per environment
-    BUCKET_NAMES = {
-        'dev': 'practice-dev-bucket',
-        'prod': 'practice-prod-bucket'
-    }
-
-    BUCKET_NAME = BUCKET_NAMES.get(environment)
-    print(f"Using bucket: {BUCKET_NAME}")
-
-except Exception as e:
-    print(f"Error during initialization: {e}")
-    raise 
+        elif os.getenv('FUNCTION_NAME'):  # Detect Google Cloud
+            print("Running in Google Cloud...")
+            project_id = os.getenv('GCLOUD_PROJECT')
+            if not project_id:
+                raise ValueError("GCLOUD_PROJECT environment variable is not set in GCP.")
+            environment = 'prod' if project_id.endswith('-prod') else 'dev'
+            TWILIO_ACCOUNT_SID = get_secret("TWILIO_ACCOUNT_SID")
+            TWILIO_AUTH_TOKEN = get_secret("TWILIO_AUTH_TOKEN")
+            TWILIO_PHONE_NUMBER = get_secret("TWILIO_PHONE_NUMBER")
+            TO_PHONE_NUMBER = get_secret("TO_PHONE_NUMBER")
+            OPENAI_API_KEY = get_secret("OPENAI_API_KEY")
+            TWILIO_MESSAGING_SERVICE_SID = get_secret("TWILIO_MESSAGING_SERVICE_SID")
+            GCLOUD_DEV_KEY = os.getenv("GCLOUD_DEV_KEY")
 
 
-# Initialize clients
-twilio_client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
-openai_client = OpenAI()
-openai_client.api_key = OPENAI_API_KEY
-storage_client = storage.Client()
+        else:  # Local development
+            print("Running locally...")
+            environment = 'dev'  # Default to development for local testing
+            load_dotenv()
+            TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
+            TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
+            TWILIO_PHONE_NUMBER = os.getenv("TWILIO_PHONE_NUMBER")
+            TO_PHONE_NUMBER = os.getenv("TO_PHONE_NUMBER")
+            OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+            TWILIO_MESSAGING_SERVICE_SID = os.getenv("TWILIO_MESSAGING_SERVICE_SID")
+
+        # # Verify secrets are loaded
+        # required_secrets = [
+        #     TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER,
+        #     TO_PHONE_NUMBER, OPENAI_API_KEY, TWILIO_MESSAGING_SERVICE_SID
+        # ]
+        # if not all(required_secrets):
+        #     raise ValueError("One or more required secrets are missing.")
+
+        # Bucket names per environment
+        BUCKET_NAMES = {
+            'dev': 'practice-dev-bucket',
+            'prod': 'practice-prod-bucket'
+        }
+
+        BUCKET_NAME = BUCKET_NAMES.get(environment)
+        print(f"Using bucket: {BUCKET_NAME}")
+
+        # Initialize clients
+        twilio_client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+        openai_client = OpenAI()
+        openai_client.api_key = OPENAI_API_KEY
+        storage_client = storage.Client()
+
+    except Exception as e:
+        print(f"Error during initialization: {e}")
+        raise 
+
+    return TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER, TO_PHONE_NUMBER, OPENAI_API_KEY, TWILIO_MESSAGING_SERVICE_SID, BUCKET_NAME, twilio_client, openai_client, storage_client
+
 
 
 
 print("random line in utils")
 def get_LLM_response(content):
+
+    if 'openai_client' not in globals():
+        raise RuntimeError("Environment not initialized. Call initialize_environment() first.")
 
     # print(f'Making OpenAI API request... with payload:\n{content}')
     try:

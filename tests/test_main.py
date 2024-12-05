@@ -4,7 +4,7 @@ import pytest
 from unittest.mock import patch, MagicMock
 from flask import Flask, request
 from main import auto_responder
-from utils import TWILIO_AUTH_TOKEN
+from utils import initialize_environment
 import os
 
 # Sample data for tests
@@ -30,6 +30,9 @@ def generate_twilio_request(data, headers):
     ):
         yield request
 
+@pytest.fixture(scope="module", autouse=True)
+def setup_environment():
+    initialize_environment()
 
 @patch('main.get_LLM_response')
 @patch('main.send_message_via_twilio')
