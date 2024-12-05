@@ -91,11 +91,15 @@ def initialize_environment():
         print(f"Using bucket: {BUCKET_NAME}")
 
         # Initialize clients
-        twilio_client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
-        openai_client = OpenAI()
-        openai_client.api_key = OPENAI_API_KEY
-        storage_client = storage.Client()
-
+        print("Initializing clients...")
+        try:
+            twilio_client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+            openai_client = OpenAI()
+            openai_client.api_key = OPENAI_API_KEY
+            storage_client = storage.Client()
+        except Exception as e:
+            print(f"Error during initialization: {e}")
+            raise
     except Exception as e:
         print(f"Error during initialization: {e}")
         raise 
