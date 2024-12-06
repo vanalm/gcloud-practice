@@ -25,6 +25,7 @@ load_dotenv()
 def auto_responder(request):
     # Initialize environment inside the function, not at import time
     env_vars = initialize_environment()
+    print(f' ENVVARS: {env_vars}')
 
     print(f'\n\n\nRequest: \n{request}')
 

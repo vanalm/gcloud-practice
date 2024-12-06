@@ -118,6 +118,7 @@ def send_message_via_twilio(phone_number, message_body, session_id, env_vars):
     """
     Send a message via the Twilio API.
     """
+    print(f'TWILIO SEND ENVVARS: {env_vars}')
     twilio_client = env_vars['twilio_client']
     messaging_service_sid = env_vars['TWILIO_MESSAGING_SERVICE_SID']
     from_number = env_vars['TWILIO_PHONE_NUMBER']
