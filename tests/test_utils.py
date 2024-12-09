@@ -2,7 +2,7 @@
 
 import os
 import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock
 from utils import (
     get_LLM_response,
     send_message_via_twilio,
@@ -14,7 +14,7 @@ import uuid
 @pytest.fixture(autouse=True)
 def set_env():
     # Set some environment variables if needed
-    # (These won't matter much since we're returning a mocked env_vars in the fixture below)
+    # These are mostly placeholders since we're using mocks in env_vars
     os.environ['ENVIRONMENT'] = 'test'
     os.environ['TWILIO_ACCOUNT_SID'] = 'test_account_sid'
     os.environ['TWILIO_AUTH_TOKEN'] = 'test_auth_token'
@@ -25,7 +25,8 @@ def set_env():
 
 @pytest.fixture(scope="module")
 def env_vars():
-    # Return a dictionary similar to what initialize_environment() would produce, but fully mocked
+    # Return a dictionary of environment variables and pre-mocked clients
+    # Ensure your source code uses these mocks instead of creating new clients
     return {
         'environment': 'test',
         'TWILIO_ACCOUNT_SID': 'test_account_sid',
@@ -36,17 +37,20 @@ def env_vars():
         'TWILIO_MESSAGING_SERVICE_SID': 'test_messaging_service_sid',
         'GCLOUD_DEV_KEY': 'test_gcloud_key',
         'BUCKET_NAME': 'test_bucket',
-        'twilio_client': MagicMock(),   # Mocked Twilio client
-        'openai_client': MagicMock(),   # Mocked OpenAI client
-        'storage_client': MagicMock()   # Mocked Storage client
+        'twilio_client': MagicMock(),
+        'openai_client': MagicMock(),
+        'storage_client': MagicMock(),
+        'secretmanager_client': MagicMock()
     }
 
-@patch('utils.openai_client.chat.completions.create')
-def test_get_LLM_response_success(mock_openai_create, env_vars):
+def test_get_LLM_response_success(env_vars):
     # Arrange
+    mock_create = MagicMock()
     mock_response = MagicMock()
     mock_response.choices = [MagicMock(message=MagicMock(content='Mocked LLM response'))]
-    mock_openai_create.return_value = mock_response
+    mock_create.return_value = mock_response
+    env_vars['openai_client'].chat.completions.create = mock_create
+
     content = [{'role': 'user', 'content': 'Hello'}]
 
     # Act
@@ -54,13 +58,13 @@ def test_get_LLM_response_success(mock_openai_create, env_vars):
 
     # Assert
     assert response == 'Mocked LLM response'
-    mock_openai_create.assert_called_once()
+    mock_create.assert_called_once()
 
-
-@patch('utils.openai_client.chat.completions.create')
-def test_get_LLM_response_exception(mock_openai_create, env_vars):
+def test_get_LLM_response_exception(env_vars):
     # Arrange
-    mock_openai_create.side_effect = Exception('OpenAI API error')
+    mock_create = MagicMock(side_effect=Exception('OpenAI API error'))
+    env_vars['openai_client'].chat.completions.create = mock_create
+
     content = [{'role': 'user', 'content': 'Hello'}]
 
     # Act
@@ -68,13 +72,11 @@ def test_get_LLM_response_exception(mock_openai_create, env_vars):
 
     # Assert
     assert response is None
-    mock_openai_create.assert_called_once()
+    mock_create.assert_called_once()
 
-
-@patch('utils.Client')
-def test_send_message_via_twilio_success(mock_twilio_client, env_vars):
+def test_send_message_via_twilio_success(env_vars):
     # Arrange
-    mock_twilio_client.return_value.messages.create.return_value.sid = 'mocked_sid'
+    env_vars['twilio_client'].messages.create.return_value.sid = 'mocked_sid'
     phone_number = '+1234567890'
     message_body = 'Test message'
     session_id = None
@@ -84,18 +86,16 @@ def test_send_message_via_twilio_success(mock_twilio_client, env_vars):
 
     # Assert
     assert unique_id is not None
-    mock_twilio_client.return_value.messages.create.assert_called_once_with(
+    env_vars['twilio_client'].messages.create.assert_called_once_with(
         messaging_service_sid='test_messaging_service_sid',
         from_='test_twilio_phone_number',
         body=message_body,
         to=phone_number
     )
 
-
-@patch('utils.Client')
-def test_send_message_via_twilio_exception(mock_twilio_client, env_vars):
+def test_send_message_via_twilio_exception(env_vars):
     # Arrange
-    mock_twilio_client.return_value.messages.create.side_effect = Exception('Twilio API error')
+    env_vars['twilio_client'].messages.create.side_effect = Exception('Twilio API error')
     phone_number = '+1234567890'
     message_body = 'Test message'
     session_id = None
@@ -105,15 +105,15 @@ def test_send_message_via_twilio_exception(mock_twilio_client, env_vars):
 
     # Assert
     assert unique_id is None
-    mock_twilio_client.return_value.messages.create.assert_called_once()
+    env_vars['twilio_client'].messages.create.assert_called_once()
 
-
-@patch('utils.storage.Client')
-def test_write_log_to_storage_success(mock_storage_client, env_vars):
+def test_write_log_to_storage_success(env_vars):
     # Arrange
-    mock_bucket = mock_storage_client.return_value.bucket.return_value
-    mock_blob = mock_bucket.blob.return_value
-    mock_blob.upload_from_string.return_value = None
+    mock_bucket = MagicMock()
+    mock_blob = MagicMock()
+    mock_bucket.blob.return_value = mock_blob
+    env_vars['storage_client'].bucket.return_value = mock_bucket
+
     log_data = {'test': 'data'}
 
     # Act
@@ -121,16 +121,16 @@ def test_write_log_to_storage_success(mock_storage_client, env_vars):
 
     # Assert
     assert result is None
-    mock_storage_client.return_value.bucket.assert_called_once_with(env_vars['BUCKET_NAME'])
+    env_vars['storage_client'].bucket.assert_called_once_with(env_vars['BUCKET_NAME'])
     mock_bucket.blob.assert_called()
     mock_blob.upload_from_string.assert_called_once()
 
-
-@patch('utils.storage.Client')
-def test_write_log_to_storage_exception(mock_storage_client, env_vars):
+def test_write_log_to_storage_exception(env_vars):
     # Arrange
-    mock_bucket = mock_storage_client.return_value.bucket.return_value
+    mock_bucket = MagicMock()
     mock_bucket.blob.side_effect = Exception('Storage error')
+    env_vars['storage_client'].bucket.return_value = mock_bucket
+
     log_data = {'test': 'data'}
 
     # Act
@@ -138,32 +138,28 @@ def test_write_log_to_storage_exception(mock_storage_client, env_vars):
 
     # Assert
     assert result is None
-    mock_storage_client.return_value.bucket.assert_called_once()
+    env_vars['storage_client'].bucket.assert_called_once()
 
-
-@patch('utils.secretmanager.SecretManagerServiceClient')
-def test_access_secret_success(mock_secret_client, env_vars):
+def test_access_secret_success(env_vars):
     # Arrange
     mock_response = MagicMock()
     mock_response.payload.data.decode.return_value = 'secret_value'
-    mock_secret_client.return_value.access_secret_version.return_value = mock_response
+    env_vars['secretmanager_client'].access_secret_version.return_value = mock_response
 
     # Act
     secret = access_secret('TEST_SECRET', env_vars)
 
     # Assert
     assert secret == 'secret_value'
-    mock_secret_client.return_value.access_secret_version.assert_called_once()
+    env_vars['secretmanager_client'].access_secret_version.assert_called_once()
 
-
-@patch('utils.secretmanager.SecretManagerServiceClient')
-def test_access_secret_exception(mock_secret_client, env_vars):
+def test_access_secret_exception(env_vars):
     # Arrange
-    mock_secret_client.return_value.access_secret_version.side_effect = Exception('Secret Manager error')
+    env_vars['secretmanager_client'].access_secret_version.side_effect = Exception('Secret Manager error')
 
     # Act
     secret = access_secret('TEST_SECRET', env_vars)
 
     # Assert
     assert secret is None
-    mock_secret_client.return_value.access_secret_version.assert_called_once()
+    env_vars['secretmanager_client'].access_secret_version.assert_called_once()
