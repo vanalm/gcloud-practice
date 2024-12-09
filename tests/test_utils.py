@@ -4,7 +4,6 @@ import os
 import pytest
 from unittest.mock import patch, MagicMock
 from utils import (
-    initialize_environment,
     get_LLM_response,
     send_message_via_twilio,
     write_log_to_storage,
@@ -14,6 +13,8 @@ import uuid
 
 @pytest.fixture(autouse=True)
 def set_env():
+    # Set some environment variables if needed
+    # (These won't matter much since we're returning a mocked env_vars in the fixture below)
     os.environ['ENVIRONMENT'] = 'test'
     os.environ['TWILIO_ACCOUNT_SID'] = 'test_account_sid'
     os.environ['TWILIO_AUTH_TOKEN'] = 'test_auth_token'
@@ -24,7 +25,21 @@ def set_env():
 
 @pytest.fixture(scope="module")
 def env_vars():
-    return initialize_environment()
+    # Return a dictionary similar to what initialize_environment() would produce, but fully mocked
+    return {
+        'environment': 'test',
+        'TWILIO_ACCOUNT_SID': 'test_account_sid',
+        'TWILIO_AUTH_TOKEN': 'test_auth_token',
+        'TWILIO_PHONE_NUMBER': 'test_twilio_phone_number',
+        'TO_PHONE_NUMBER': 'test_to_phone_number',
+        'OPENAI_API_KEY': 'test_openai_key',
+        'TWILIO_MESSAGING_SERVICE_SID': 'test_messaging_service_sid',
+        'GCLOUD_DEV_KEY': 'test_gcloud_key',
+        'BUCKET_NAME': 'test_bucket',
+        'twilio_client': MagicMock(),   # Mocked Twilio client
+        'openai_client': MagicMock(),   # Mocked OpenAI client
+        'storage_client': MagicMock()   # Mocked Storage client
+    }
 
 @patch('utils.openai_client.chat.completions.create')
 def test_get_LLM_response_success(mock_openai_create, env_vars):
