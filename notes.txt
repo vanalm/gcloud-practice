@@ -1,0 +1,1 @@
+Pass clients as arguments to fuctions to avoid having them as global environment_variables
