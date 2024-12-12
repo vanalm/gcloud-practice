@@ -1,12 +1,9 @@
-# utils.py
-
 from openai import OpenAI
 import json
 from twilio.rest import Client
 from google.cloud import secretmanager, storage
 import os
 from dotenv import load_dotenv
-import datetime
 from datetime import datetime, timezone
 import uuid
 
@@ -26,10 +23,9 @@ def get_secret(secret_name):
 def initialize_environment():
     """Initialize environment variables and clients, returning them in a dictionary."""
     try:
-        # Determine environment and load variables
         if os.getenv('CI'):  # Running in GitHub Actions
             print("Running in GitHub Actions...")
-            environment = 'dev'  # Default to development in CI
+            environment = 'dev'
             TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
             TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
             TWILIO_PHONE_NUMBER = os.getenv("TWILIO_PHONE_NUMBER")
@@ -63,8 +59,8 @@ def initialize_environment():
             TO_PHONE_NUMBER = os.getenv("TO_PHONE_NUMBER")
             OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
             TWILIO_MESSAGING_SERVICE_SID = os.getenv("TWILIO_MESSAGING_SERVICE_SID")
+            GCLOUD_DEV_KEY = os.getenv("GCLOUD_DEV_KEY")
 
-        # Determine bucket name based on environment
         BUCKET_NAMES = {
             'dev': 'practice-dev-bucket',
             'prod': 'practice-prod-bucket'
@@ -73,13 +69,15 @@ def initialize_environment():
 
         print(f"Using bucket: {BUCKET_NAME}")
         print("Initializing clients...")
-        # Initialize clients
         twilio_client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
         openai_client = OpenAI()
         openai_client.api_key = OPENAI_API_KEY
         storage_client = storage.Client()
 
-        # Return all environment variables and clients in a dictionary
+        # Initialize a mockable secret manager client here if needed
+        # For testing, we'll allow env_vars to be overridden
+        secretmanager_client = secretmanager.SecretManagerServiceClient()
+
         env_vars = {
             'environment': environment,
             'TWILIO_ACCOUNT_SID': TWILIO_ACCOUNT_SID,
@@ -92,7 +90,9 @@ def initialize_environment():
             'BUCKET_NAME': BUCKET_NAME,
             'twilio_client': twilio_client,
             'openai_client': openai_client,
-            'storage_client': storage_client
+            'storage_client': storage_client,
+            'secretmanager_client': secretmanager_client,
+            'GCLOUD_PROJECT': os.getenv('GCLOUD_PROJECT', 'test_project')  # fallback for tests
         }
 
         return env_vars
@@ -115,9 +115,6 @@ def get_LLM_response(content, env_vars):
         return None
 
 def send_message_via_twilio(phone_number, message_body, session_id, env_vars):
-    """
-    Send a message via the Twilio API.
-    """
     print(f'TWILIO SEND ENVVARS: {env_vars}')
     twilio_client = env_vars['twilio_client']
     messaging_service_sid = env_vars['TWILIO_MESSAGING_SERVICE_SID']
@@ -140,8 +137,8 @@ def send_message_via_twilio(phone_number, message_body, session_id, env_vars):
 
 def access_secret(secret_name, env_vars):
     try:
-        client = secretmanager.SecretManagerServiceClient()
-        project_id = os.environ.get('GCP_PROJECT')
+        client = env_vars['secretmanager_client']
+        project_id = env_vars.get('GCLOUD_PROJECT', 'test_project')
         name = f"projects/{project_id}/secrets/{secret_name}/versions/latest"
         response = client.access_secret_version(name=name)
         return response.payload.data.decode('UTF-8')

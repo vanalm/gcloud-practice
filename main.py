@@ -68,13 +68,18 @@ def auto_responder(request):
 
     print(f'received message from {phone_number}: {message_body}')
 
-    # Prepare content for LLM request
+ # Prepare content for LLM request
     context = {'role': 'system', "content": 'This is a test of a local system. Please provide a terse response (a haiku).'}
     current_message = {"role": "user", "content": message_body}
 
-    # Get response from LLM
-    llm_response = get_LLM_response([context, current_message], env_vars)
+    try:
+        llm_response = get_LLM_response([context, current_message], env_vars)
+    except Exception as e:
+        print(f"Error generating LLM response: {e}")
+        return jsonify({'statusCode': 500, 'body': 'Internal Server Error'}), 500
 
+    if llm_response is None:
+        return jsonify({'statusCode': 500, 'body': 'Internal Server Error'}), 500
     # Send response via Twilio
     msg_id = send_message_via_twilio(phone_number, llm_response, None, env_vars)
 
