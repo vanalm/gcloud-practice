@@ -23,7 +23,7 @@ def set_env():
     os.environ['OPENAI_API_KEY'] = 'test_openai_key'
     os.environ['TWILIO_MESSAGING_SERVICE_SID'] = 'test_messaging_service_sid'
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def env_vars():
     # Return a dictionary of environment variables and pre-mocked clients
     # Ensure your source code uses these mocks instead of creating new clients
