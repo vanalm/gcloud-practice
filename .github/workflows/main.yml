@@ -1,0 +1,109 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - dev
+      - main
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run tests
+        env:
+          ENVIRONMENT: ${{ secrets.ENVIRONMENT }}
+          TWILIO_ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}
+          TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
+          TWILIO_PHONE_NUMBER: ${{ secrets.TWILIO_PHONE_NUMBER }}
+          TO_PHONE_NUMBER: ${{ secrets.TO_PHONE_NUMBER }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          TWILIO_MESSAGING_SERVICE_SID: ${{ secrets.TWILIO_MESSAGING_SERVICE_SID }}
+        run: pytest tests/
+
+  deploy-dev:
+    if: github.ref == 'refs/heads/dev'
+    needs: test
+    runs-on: ubuntu-latest
+    environment: dev
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Authenticate with Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCLOUD_DEV_KEY }}
+
+      - name: Deploy to Development
+        uses: google-github-actions/deploy-cloud-functions@v1
+        with:
+          name: auto_responder
+          runtime: python310
+          entry_point: auto_responder
+          source_dir: .
+          trigger_http: true
+          region: us-central1
+          service_account_email: practice-dev-account@practice-dev-project.iam.gserviceaccount.com
+          environment_variables: |
+            ENVIRONMENT=dev
+            GCLOUD_PROJECT=practice-dev-project
+            BUCKET_NAME=practice-dev-bucket
+            TWILIO_ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}
+            TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
+            TWILIO_PHONE_NUMBER: ${{ secrets.TWILIO_PHONE_NUMBER }}
+            TO_PHONE_NUMBER: ${{ secrets.TO_PHONE_NUMBER }}
+            OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+            TWILIO_MESSAGING_SERVICE_SID: ${{ secrets.TWILIO_MESSAGING_SERVICE_SID }}
+
+  deploy-prod:
+    if: github.ref == 'refs/heads/main'
+    needs: test
+    runs-on: ubuntu-latest
+    environment: prod
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Authenticate with Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCLOUD_PROD_KEY }}
+
+      - name: Deploy to Production
+        uses: google-github-actions/deploy-cloud-functions@v1
+        with:
+          name: auto_responder
+          runtime: python310
+          entry_point: auto_responder
+          source_dir: .
+          trigger_http: true
+          region: us-central1
+          service_account_email: practice-prod-account@practice-prod-project.iam.gserviceaccount.com
+          environment_variables: |
+            ENVIRONMENT=prod
+            GCLOUD_PROJECT=practice-prod-project
+            BUCKET_NAME=practice-prod-bucket
+            TWILIO_ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}
+            TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
+            TWILIO_PHONE_NUMBER: ${{ secrets.TWILIO_PHONE_NUMBER }}
+            TO_PHONE_NUMBER: ${{ secrets.TO_PHONE_NUMBER }}
+            OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+            TWILIO_MESSAGING_SERVICE_SID: ${{ secrets.TWILIO_MESSAGING_SERVICE_SID }}
